@@ -17,8 +17,10 @@
     - The function assumes that the database connection has already been established.
     - The function does not handle any exceptions that may occur during the execution of the SQL query or file writing.
     """
+from modules.handle_exit_input import clean_exit, flush_input
 
-def extract_table_column_info(cur):
+def extract_postgres_table_column_info(cur):
+    flush_input()
     schema = input("Enter the schema name (default is public): ") or "public"
     cur.execute("""
         SELECT clm.table_name, clm.column_name 

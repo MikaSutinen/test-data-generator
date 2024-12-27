@@ -22,3 +22,11 @@ def clean_exit():
     
     print("Exiting test data generator...")
     sys.exit(0)
+
+def flush_input():
+    try:
+        import msvcrt
+        while msvcrt.kbhit():
+            msvcrt.getch()
+    except ImportError:
+        pass

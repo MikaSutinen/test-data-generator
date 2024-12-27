@@ -15,7 +15,7 @@ Graceful Exit:
 """
 
 import sys
-from modules.clean_exit import clean_exit
+from modules.handle_exit_input import clean_exit, flush_input
 
 steps = [
     {"key": "hostname", "prompt": "Enter the hostname: ", "default": None},
@@ -27,14 +27,6 @@ steps = [
 
 config = {}
 current_step = 0
-
-def flush_input():
-    try:
-        import msvcrt
-        while msvcrt.kbhit():
-            msvcrt.getch()
-    except ImportError:
-        pass
 
 def confirm_inputs(hostname, port, dbname, username):
     try:

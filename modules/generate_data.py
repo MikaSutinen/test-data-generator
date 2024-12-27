@@ -46,7 +46,7 @@ def parse_column_mapping(file_path):
     print(f"Parsed table definitions: {table_definitions}")  # Debugging output
     return table_definitions
 
-def generate_test_data(cur, table_definitions):
+def generate_postgres_test_data(cur, table_definitions):
     for (schema, table), definition in table_definitions.items():
         columns = definition['columns']
         rows_to_generate = definition['rows_to_generate']

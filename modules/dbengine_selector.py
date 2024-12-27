@@ -22,7 +22,7 @@ Graceful Exit:
 import keyboard
 import os
 import sys
-from modules.clean_exit import clean_exit
+from modules.handle_exit_input import clean_exit, flush_input
 
 def select_database_engine():
     options = ["PostgreSQL", "SQL Server (coming soon)"]

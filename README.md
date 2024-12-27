@@ -63,6 +63,10 @@ After each column mapping export, there will also be a row after each table call
     python test_data_generator.py
     ```
 
+    There is a simple UI that allows you to navigate through various options.
+
+    ![DB Engine Selector](./help-images/db-engine-selector.png)
+
     You will be prompted to enter the database connection parameters (hostname, port, database name, username, and password).
 
 3. Select an option:
