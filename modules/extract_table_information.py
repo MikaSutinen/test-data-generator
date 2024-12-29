@@ -17,28 +17,37 @@
     - The function assumes that the database connection has already been established.
     - The function does not handle any exceptions that may occur during the execution of the SQL query or file writing.
     """
+from modules.handle_exit_input import clean_exit, flush_input
+from modules.logger import get_logger
 
-def extract_table_column_info(cur):
-    schema = input("Enter the schema name (default is public): ") or "public"
-    cur.execute("""
-        SELECT clm.table_name, clm.column_name 
-        FROM information_schema.columns AS clm
-        INNER JOIN information_schema.tables tbl
-        ON clm.table_name = tbl.table_name
-        WHERE tbl.table_type = 'BASE TABLE'
-        AND tbl.table_schema = %s
-        AND tbl.table_name NOT LIKE '%%flyway%%'
-        ORDER BY clm.table_name, clm.column_name
-    """, (schema,))
-    table_columns = cur.fetchall()
-    
-    with open("column_mapping.txt", "w") as file:
-        current_table = None
-        for table, column in table_columns:
-            if current_table and current_table != table:
+logger = get_logger(__name__)
+
+def extract_postgres_table_column_info(cur, RUNNING_OS):
+    try: 
+        flush_input(RUNNING_OS)
+        schema = input("Enter the schema name (default is public): ") or "public"
+        cur.execute("""
+            SELECT clm.table_name, clm.column_name 
+            FROM information_schema.columns AS clm
+            INNER JOIN information_schema.tables tbl
+            ON clm.table_name = tbl.table_name
+            WHERE tbl.table_type = 'BASE TABLE'
+            AND tbl.table_schema = %s
+            AND tbl.table_name NOT LIKE '%%flyway%%'
+            ORDER BY clm.table_name, clm.column_name
+        """, (schema,))
+        table_columns = cur.fetchall()
+
+        with open("column_mapping.txt", "w") as file:
+            current_table = None
+            for table, column in table_columns:
+                if current_table and current_table != table:
+                    file.write(f"{schema}.{current_table}.rows_to_generate =\n")
+                current_table = table
+                file.write(f"{schema}.{table}.{column} = \n")
+                print(f"Table: {table}, Column: {column}")
+            if current_table:
                 file.write(f"{schema}.{current_table}.rows_to_generate =\n")
-            current_table = table
-            file.write(f"{schema}.{table}.{column} = \n")
-            print(f"Table: {table}, Column: {column}")
-        if current_table:
-            file.write(f"{schema}.{current_table}.rows_to_generate =\n")
+    except Exception as e:
+        logger.error(f"An error occurred during PostgreSQL schema extraction: {e}")
+        clean_exit()

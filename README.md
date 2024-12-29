@@ -37,11 +37,40 @@ To run the solution in this repository, you'll need to meet the following prereq
 
 You can use any Faker supported functions on the file, the file below is from the example schema included in the repository. The ordering of the file follows the PK/FK relationships in the database, so we first start by generating users, then their posts, then their comments.
 
-After each column mapping export, there will also be a row after each table called rows_to_generate. This is used to provide the Faker information about how many rows of data to generate for that specific table. In the example, we're generating 20 users, 100 posts and 300 comments.
+After each column mapping export, there will also be a row after each table called rows_to_generate. This is used to provide the Faker information about how many rows of data to generate for that specific table. 
 
-1. Configure the `column_mapping.txt` file:
+## Example Execution
 
-    Define the structure and content of the data to be generated. For example:
+Here is an example of how to use the utility:
+
+1. Start the test data generator:
+
+    ```sh
+    python test_data_generator.py
+    ```
+
+    There is a simple UI that allows you to navigate through various options. The first option is to select database engine.
+
+    ![DB Engine Selector](./help-images/db-engine-selector.png)
+
+    It'll ask for confirmation before proceeding with the connection string builder.
+
+    ![Postgres Connection String Builder](./help-images/postgres-connectionstring-builder.png)
+
+    Selecting "y" or "yes" moves you to next UI, selecting "n" or "no" restarts the process of entering the connection information again. Selecting "b" or "back" sends you to database engine selector.
+
+    By selecting "y" or "yes" you move to next phase, where you need to select the action to perform. There are two options available:
+
+    ![Postgres Option Selector](./help-images/postgres-option-selector.png)
+
+    Depending on your selection, one of the two operations is executed:
+
+2. The tool extracts table and column information. This will generate a `column_mapping.txt` file with the structure of your database tables and all their columns.
+
+    **Note:** This will generate list of all columns from all the tables, including those that you don't need to generate data to. For example, in the example schema in this project there are PKs on the tables that are generated automatically, you should remove those from the `column_mapping.txt` file.
+    
+    If you are using the example schema from this repository, you can find column mappings from below. In the example, we're generating 20 users, 100 posts and 300 comments.
+    
     ```plaintext
     test.users.email = fake.email()
     test.users.name = fake.name()
@@ -56,45 +85,13 @@ After each column mapping export, there will also be a row after each table call
     test.comments.rows_to_generate = 300
     ```
 
-2. Run the script:
+3. The tool will generate test data. Before you can generate test data, you will need to have a `column_mapping.txt` with the column to faker data types mapping. 
 
-    Execute the `test_data_generator.py` script and follow the prompts to connect to your PostgreSQL database and generate the data.
-    ```sh
-    python test_data_generator.py
-    ```
+### Generate test data:
 
-    You will be prompted to enter the database connection parameters (hostname, port, database name, username, and password).
+Once you select the generate data option, it'll do so immediately, using the `column_mapping.txt` file to match columns with proper data. The execution provides logged information on the operations.
 
-3. Select an option:
-
-    - Option 1: Extract table and column information from the database and generate a `column_mapping.txt` file.
-    - Option 2: Generate test data based on the `column_mapping.txt` file.
-
-## Example
-
-Here is an example of how to use the utility:
-
-1. Extract table and column information:
-
-    ```sh
-    python test_data_generator.py
-    ```
-
-    Select option 1 to extract table and column information. This will generate a `column_mapping.txt` file with the structure of your database tables.
-
-2. Edit the `column_mapping.txt` file:
-
-    Update the `column_mapping.txt` file to define the data to be generated for each column.
-
-3. Generate test data:
-
-    ```sh
-    python test_data_generator.py
-    ```
-
-    Select option 2 to generate test data based on the `column_mapping.txt` file.
-
-    __Note!__: This will generate list of all columns from all the tables, including those that you don't need to generate data to. For example, in the example schema in this project there are PKs on the tables that are generated automatically, you should remove those from the `column_mapping.txt` file.
+![Logging information for data generation](./help-images/data-generation-logging.png)
 
 ## The sample database schema
 
@@ -146,8 +143,7 @@ This utility was done rather quickly, so there's naturally room for improvement.
 
 1. Custom function to generate sequential IDs (useful for generating integer PKs)
 2. Automatic detection for FK constraints to set up correct data load order in the column_mapping.txt
-3. Improved logging to capture errors during data generation and load process
-4. Small visual improvements, f.ex. progress bar instead of successful insert messages
+3. Support for multiple database engines
 
 ## License
 
