@@ -14,15 +14,18 @@ Graceful Exit:
 - When a KeyboardInterrupt is detected, the script prints an exit message, unhooks all keyboard events using keyboard.unhook_all(), and exits the program.
 """
 
-import sys
+import maskpass
 from modules.handle_exit_input import clean_exit, flush_input
+from modules.logger import get_logger
+
+logger = get_logger(__name__)
 
 steps = [
     {"key": "hostname", "prompt": "Enter the hostname: ", "default": None},
     {"key": "port", "prompt": "Enter the port (PostgreSQL default is 5432): ", "default": "5432"},
     {"key": "dbname", "prompt": "Enter the database name: ", "default": None},
     {"key": "username", "prompt": "Enter the username: ", "default": None},
-    {"key": "password", "prompt": "Enter the password: ", "default": None},
+    {"key": "password", "prompt": "Enter the password: ", "default": None, "secure": True},
 ]
 
 config = {}
@@ -36,9 +39,7 @@ def confirm_inputs(hostname, port, dbname, username):
             print(f"Port: {port}")
             print(f"Database Name: {dbname}")
             print(f"Username: {username}")
-            confirmation = input(
-                "Are these correct? (yes/y, no/n, back/b): "
-            ).strip().lower()
+            confirmation = input("Are these correct? (yes/y, no/n, back/b): ").strip().lower()
 
             if confirmation in ["yes", "y"]:
                 return True
@@ -51,10 +52,9 @@ def confirm_inputs(hostname, port, dbname, username):
     finally:
         pass
 
-
-def build_postgres_connection():
+def build_postgres_connection(RUNNING_OS):
     global current_step, config
-    flush_input()
+    flush_input(RUNNING_OS)
     YELLOW = '\033[93m'
     RESET = '\033[0m'
 
@@ -69,7 +69,6 @@ def build_postgres_connection():
         config.clear()
 
         while True:
-
             if current_step == len(steps):
                 result = confirm_inputs(
                     config["hostname"],
@@ -91,7 +90,11 @@ def build_postgres_connection():
             step = steps[current_step]
 
             while True:
-                user_input = input(step["prompt"]).strip()
+                if step.get("secure"):
+                    user_input = maskpass.askpass(step["prompt"], mask="*").strip()
+                else:
+                    user_input = input(step["prompt"]).strip()
+
                 if not user_input and step["default"] is not None:
                     user_input = step["default"]
                 if step["key"] == "hostname" and not user_input:
@@ -104,6 +107,8 @@ def build_postgres_connection():
 
     except KeyboardInterrupt:
         print("\nExiting...")
-        clean_exit()
+        clean_exit(RUNNING_OS)
+    except Exception as e:
+        logger.error(f"PostgreSQL connection setup failed: {e}")
     finally:
         pass
